@@ -1,0 +1,16 @@
+scalar Time
+
+enum Role { ADMIN STUDENT }
+
+type User { id: ID!, email: String!, name: String!, role: Role! }
+
+type AuthPayload { accessToken: String!, user: User! }
+
+type Query {
+  me: User!
+}
+
+type Mutation {
+  register(email: String!, name: String!, password: String!): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+}
