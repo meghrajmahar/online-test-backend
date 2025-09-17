@@ -57,7 +57,7 @@ func Connect(cfg ...Config) *gorm.DB {
 	if err := sqlDB.Ping(); err != nil {
 		log.Fatalf("database ping failed: %v", err)
 	}
-
+	log.Println("DB connected")
 	return db
 }
 

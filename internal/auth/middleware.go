@@ -14,10 +14,10 @@ type ctxKey string
 const ContextKey ctxKey = "jwtClaims"
 
 func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h := r.Header.Get("Authorization")
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		h := req.Header.Get("Authorization")
 		if !strings.HasPrefix(h, "Bearer") {
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(resp, req)
 			return
 		}
 		tokenStr := strings.TrimPrefix(h, "Bearer")
@@ -26,9 +26,9 @@ func Middleware(next http.Handler) http.Handler {
 		})
 		if token != nil && token.Valid {
 			if claims, ok := token.Claims.(*Claims); ok {
-				r = r.WithContext(context.WithValue(r.Context(), ContextKey, claims))
+				req = req.WithContext(context.WithValue(req.Context(), ContextKey, claims))
 			}
 		}
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(resp, req)
 	})
 }
