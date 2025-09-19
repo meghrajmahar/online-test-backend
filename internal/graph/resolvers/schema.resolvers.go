@@ -10,45 +10,24 @@ import (
 
 	"github.com/meghraj/online-test-backend/internal/graph/generated"
 	"github.com/meghraj/online-test-backend/internal/graph/model"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Register is the resolver for the register field.
-// func (r *mutationResolver) Register(ctx context.Context, email string, name string, password string) (*model.AuthPayload, error) {
-// 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-// 	u := models.User{Email: email, Name: name, Role: models.RoleAdmin, PasswordHash: string(hash)}
-// 	if err := m.DB.Create(&u).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	token, err := auth.Sign(u.ID.String(), string(u.Role))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &model.AuthPayload{
-// 		AccessToken: token,
-// 		User:        &model.User{ID: u.ID.String(), Email: u.Email, Name: u.Name, Role: model.Role(u.Role)},
-// 	}, nil
-// }
+func (r *mutationResolver) Register(ctx context.Context, email string, name string, password string) (*model.AuthPayload, error) {
+	return r.AuthService.Register(ctx, email, name, password)
+}
 
 // Login is the resolver for the login field.
-// func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthPayload, error) {
-// 	var u models.User
-// 	if err := m.DB.Where("email = ?", email).First(&u).Error; err != nil {
-// 		return nil, fmt.Errorf("Invalid credentials")
-// 	}
-// 	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
-// 		return nil, fmt.Errorf("Invalid credential")
-// 	}
-
-// 	token, err := auth.Sign(u.ID.String(), string(u.Role))
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &model.AuthPayload{
-// 		AccessToken: token,
-// 		User:        &model.User{ID: u.ID.String(), Email: u.Email, Name: u.Name, Role: model.Role(u.Role)},
-// 	}, nil
-// }
+func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthPayload, error) {
+	if r == nil || r.Resolver == nil {
+		return nil, gqlerror.Errorf("resolver not initialized")
+	}
+	if r.AuthService == nil {
+		return nil, gqlerror.Errorf("AuthService is nil (not injected)")
+	}
+	return r.AuthService.Login(ctx, email, password) //delegate
+}
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {

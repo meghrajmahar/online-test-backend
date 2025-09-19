@@ -13,6 +13,7 @@ import (
 	"github.com/meghraj/online-test-backend/internal/graph/generated"
 	"github.com/meghraj/online-test-backend/internal/graph/resolvers"
 	"github.com/meghraj/online-test-backend/internal/models"
+	services "github.com/meghraj/online-test-backend/internal/service"
 	"gorm.io/gorm"
 )
 
@@ -36,9 +37,14 @@ func main() {
 	}))
 	r.Use(auth.Middleware)
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
-		generated.Config{Resolvers: &resolvers.Resolver{DB: d}},
-	))
+	resolver := &resolvers.Resolver{
+		DB:          d,
+		AuthService: services.NewAuthService(d), // <- yeh missing tha
+	}
+
+	es := generated.NewExecutableSchema(generated.Config{Resolvers: resolver})
+	srv := handler.NewDefaultServer(es)
+
 	r.Handle("/query", srv)
 	r.Handle("/", playground.Handler("GraphQL", "/query"))
 
