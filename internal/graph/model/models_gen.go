@@ -9,15 +9,139 @@ import (
 	"strconv"
 )
 
+type AddOptionsInput struct {
+	QuestionID string         `json:"questionId"`
+	Options    []*OptionInput `json:"options"`
+}
+
+type AnswerMCQInput struct {
+	AttemptID  string   `json:"attemptId"`
+	QuestionID string   `json:"questionId"`
+	OptionIds  []string `json:"optionIds"`
+}
+
+type AnswerNumericInput struct {
+	AttemptID     string  `json:"attemptId"`
+	QuestionID    string  `json:"questionId"`
+	NumericAnswer float64 `json:"numericAnswer"`
+}
+
+type AnswerTextInput struct {
+	AttemptID  string `json:"attemptId"`
+	QuestionID string `json:"questionId"`
+	AnswerText string `json:"answerText"`
+}
+
+type Attempt struct {
+	ID          string   `json:"id"`
+	ExamID      string   `json:"examId"`
+	UserID      string   `json:"userId"`
+	Status      string   `json:"status"`
+	StartedAt   string   `json:"startedAt"`
+	SubmittedAt string   `json:"submittedAt"`
+	TotalScore  *float64 `json:"totalScore,omitempty"`
+}
+
+type AttemptResult struct {
+	AttemptID   string           `json:"attemptId"`
+	TotalScore  float64          `json:"totalScore"`
+	PerQuestion []*QuestionScore `json:"perQuestion"`
+}
+
 type AuthPayload struct {
 	AccessToken string `json:"accessToken"`
 	User        *User  `json:"user"`
 }
 
+type CreateExamInput struct {
+	Title       string  `json:"title"`
+	Description *string `json:"description,omitempty"`
+	DurationMin int     `json:"durationMin"`
+}
+
+type CreateQuestionInput struct {
+	ExamID         string       `json:"examId"`
+	Statement      string       `json:"statement"`
+	QuestionType   QuestionType `json:"questionType"`
+	Points         *float64     `json:"points,omitempty"`
+	NegativePoints *float64     `json:"negativePoints,omitempty"`
+	Position       *int         `json:"position,omitempty"`
+}
+
+type Exam struct {
+	ID          string      `json:"id"`
+	Title       string      `json:"title"`
+	Description *string     `json:"description,omitempty"`
+	DurationMin int         `json:"durationMin"`
+	Questions   []*Question `json:"questions"`
+}
+
+type ExamList struct {
+	Items []*Exam `json:"items"`
+	Total int     `json:"total"`
+}
+
 type Mutation struct {
 }
 
+type Option struct {
+	ID       string `json:"id"`
+	Text     string `json:"text"`
+	Position int    `json:"position"`
+}
+
+type OptionAdmin struct {
+	ID        string `json:"id"`
+	Text      string `json:"text"`
+	Position  int    `json:"position"`
+	IsCorrect bool   `json:"isCorrect"`
+}
+
+type OptionInput struct {
+	Text     string `json:"text"`
+	Position *int   `json:"position,omitempty"`
+}
+
 type Query struct {
+}
+
+type Question struct {
+	ID             string       `json:"id"`
+	Statement      string       `json:"statement"`
+	QuestionType   QuestionType `json:"questionType"`
+	Points         float64      `json:"points"`
+	NegativePoints float64      `json:"negativePoints"`
+	Position       int          `json:"position"`
+	Options        []*Option    `json:"options"`
+}
+
+type QuestionAdmin struct {
+	ID             string         `json:"id"`
+	Statement      string         `json:"statement"`
+	QuestionType   QuestionType   `json:"questionType"`
+	Points         float64        `json:"points"`
+	NegativePoints float64        `json:"negativePoints"`
+	Position       int            `json:"position"`
+	Options        []*OptionAdmin `json:"options"`
+}
+
+type QuestionScore struct {
+	QuestionID   string  `json:"questionId"`
+	IsCorrect    bool    `json:"isCorrect"`
+	ScoreAwarded float64 `json:"scoreAwarded"`
+}
+
+type SetCorrectOptionsInput struct {
+	QuestionID       string   `json:"questionId"`
+	CorrectOptionIds []string `json:"correctOptionIds"`
+}
+
+type StartAttemptInput struct {
+	ExamID string `json:"examId"`
+}
+
+type SubmitAttemptInput struct {
+	AttemptID string `json:"attemptId"`
 }
 
 type User struct {
@@ -25,6 +149,67 @@ type User struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 	Role  Role   `json:"role"`
+}
+
+type QuestionType string
+
+const (
+	QuestionTypeMcqSingle QuestionType = "MCQ_SINGLE"
+	QuestionTypeMcqMulti  QuestionType = "MCQ_MULTI"
+	QuestionTypeTrueFalse QuestionType = "TRUE_FALSE"
+	QuestionTypeShortText QuestionType = "SHORT_TEXT"
+	QuestionTypeNumeric   QuestionType = "NUMERIC"
+)
+
+var AllQuestionType = []QuestionType{
+	QuestionTypeMcqSingle,
+	QuestionTypeMcqMulti,
+	QuestionTypeTrueFalse,
+	QuestionTypeShortText,
+	QuestionTypeNumeric,
+}
+
+func (e QuestionType) IsValid() bool {
+	switch e {
+	case QuestionTypeMcqSingle, QuestionTypeMcqMulti, QuestionTypeTrueFalse, QuestionTypeShortText, QuestionTypeNumeric:
+		return true
+	}
+	return false
+}
+
+func (e QuestionType) String() string {
+	return string(e)
+}
+
+func (e *QuestionType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = QuestionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid QuestionType", str)
+	}
+	return nil
+}
+
+func (e QuestionType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *QuestionType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e QuestionType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }
 
 type Role string

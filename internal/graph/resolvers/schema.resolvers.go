@@ -29,9 +29,69 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 	return r.AuthService.Login(ctx, email, password) //delegate
 }
 
+// CreateExam is the resolver for the createExam field.
+func (r *mutationResolver) CreateExam(ctx context.Context, input model.CreateExamInput) (*model.Exam, error) {
+	return r.ExamService.CreateExam(ctx, input)
+}
+
+// CreateQuestion is the resolver for the createQuestion field.
+func (r *mutationResolver) CreateQuestion(ctx context.Context, input model.CreateQuestionInput) (*model.QuestionAdmin, error) {
+	panic(fmt.Errorf("not implemented: CreateQuestion - createQuestion"))
+}
+
+// AddOptions is the resolver for the addOptions field.
+func (r *mutationResolver) AddOptions(ctx context.Context, input model.AddOptionsInput) ([]*model.OptionAdmin, error) {
+	panic(fmt.Errorf("not implemented: AddOptions - addOptions"))
+}
+
+// SetCorrectOptions is the resolver for the setCorrectOptions field.
+func (r *mutationResolver) SetCorrectOptions(ctx context.Context, input model.SetCorrectOptionsInput) (*model.QuestionAdmin, error) {
+	panic(fmt.Errorf("not implemented: SetCorrectOptions - setCorrectOptions"))
+}
+
+// StartAttempt is the resolver for the startAttempt field.
+func (r *mutationResolver) StartAttempt(ctx context.Context, input model.StartAttemptInput) (*model.Attempt, error) {
+	panic(fmt.Errorf("not implemented: StartAttempt - startAttempt"))
+}
+
+// AnswerMcq is the resolver for the answerMCQ field.
+func (r *mutationResolver) AnswerMcq(ctx context.Context, input model.AnswerMCQInput) (bool, error) {
+	panic(fmt.Errorf("not implemented: AnswerMcq - answerMCQ"))
+}
+
+// AnswerText is the resolver for the answerText field.
+func (r *mutationResolver) AnswerText(ctx context.Context, input model.AnswerTextInput) (bool, error) {
+	panic(fmt.Errorf("not implemented: AnswerText - answerText"))
+}
+
+// AnswerNumeric is the resolver for the answerNumeric field.
+func (r *mutationResolver) AnswerNumeric(ctx context.Context, input model.AnswerNumericInput) (bool, error) {
+	panic(fmt.Errorf("not implemented: AnswerNumeric - answerNumeric"))
+}
+
+// SubmitAttempt is the resolver for the submitAttempt field.
+func (r *mutationResolver) SubmitAttempt(ctx context.Context, input model.SubmitAttemptInput) (*model.AttemptResult, error) {
+	panic(fmt.Errorf("not implemented: SubmitAttempt - submitAttempt"))
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	panic(fmt.Errorf("not implemented: Me - me"))
+}
+
+// ExamList is the resolver for the examList field.
+func (r *queryResolver) ExamList(ctx context.Context, limit *int, offset *int, search *string, sort *string) (*model.ExamList, error) {
+	return r.ExamService.ExamList(ctx, limit, offset, search, sort)
+}
+
+// Exam is the resolver for the exam field.
+func (r *queryResolver) Exam(ctx context.Context, examID string) (*model.Exam, error) {
+	panic(fmt.Errorf("not implemented: Exam - exam"))
+}
+
+// ExamAdmin is the resolver for the examAdmin field.
+func (r *queryResolver) ExamAdmin(ctx context.Context, examID string) ([]*model.QuestionAdmin, error) {
+	panic(fmt.Errorf("not implemented: ExamAdmin - examAdmin"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

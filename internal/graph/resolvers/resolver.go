@@ -12,4 +12,5 @@ import (
 type Resolver struct {
 	DB          *gorm.DB
 	AuthService services.AuthService
+	ExamService services.ExamService
 }

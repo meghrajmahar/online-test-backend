@@ -6,11 +6,163 @@ type User { id: ID!, email: String!, name: String!, role: Role! }
 
 type AuthPayload { accessToken: String!, user: User! }
 
+# ===== Enums =====
+enum QuestionType {
+  MCQ_SINGLE
+  MCQ_MULTI
+  TRUE_FALSE
+  SHORT_TEXT
+  NUMERIC
+}
+
+# ===== Public (student) types =====
+type Exam {
+  id: ID!
+  title: String!
+  description: String
+  durationMin: Int!
+  questions: [Question!]!
+}
+
+type Question {
+  id: ID!
+  statement: String!
+  questionType: QuestionType!
+  points: Float!
+  negativePoints: Float!
+  position: Int!
+  options: [Option!]!
+}
+
+type Option {
+  id: ID!
+  text: String!
+  position: Int!
+}
+
+# ===== Admin types (expose isCorrect) =====
+type OptionAdmin {
+  id: ID!
+  text: String!
+  position: Int!
+  isCorrect: Boolean!
+}
+
+type QuestionAdmin {
+  id: ID!
+  statement: String!
+  questionType: QuestionType!
+  points: Float!
+  negativePoints: Float!
+  position: Int!
+  options: [OptionAdmin!]!
+}
+
+# ===== Attempt/Results =====
+type Attempt {
+  id: ID!
+  examId: ID!
+  userId: ID!
+  status: String!
+  startedAt: String!
+  submittedAt: String!
+  totalScore: Float
+}
+
+type QuestionScore {
+  questionId: ID!
+  isCorrect: Boolean!
+  scoreAwarded: Float!
+}
+
+type AttemptResult {
+  attemptId: ID!
+  totalScore: Float!
+  perQuestion: [QuestionScore!]!
+}
+
+
+# ===== Admin Inputs =====
+input CreateExamInput {
+  title: String!
+  description: String
+  durationMin: Int!
+}
+
+input CreateQuestionInput {
+  examId: ID!
+  statement: String!
+  questionType: QuestionType!
+  points: Float = 1
+  negativePoints: Float = 0
+  position: Int = 0
+}
+
+input OptionInput { text: String!, position: Int = 0 }
+
+input AddOptionsInput {
+  questionId: ID!
+  options: [OptionInput!]! # 4+ allowed
+}
+
+input SetCorrectOptionsInput {
+  questionId: ID!
+  correctOptionIds: [ID!]!
+}
+
+
+# ===== Student Inputs =====
+input StartAttemptInput { examId: ID! }
+
+input AnswerMCQInput {
+  attemptId: ID!
+  questionId: ID!
+  optionIds: [ID!]!
+}
+
+input AnswerTextInput {
+  attemptId: ID!
+  questionId: ID!
+  answerText: String!
+}
+
+input AnswerNumericInput {
+  attemptId: ID!
+  questionId: ID!
+  numericAnswer: Float!
+}
+
+input SubmitAttemptInput { attemptId: ID! }
+
+type ExamList { items: [Exam!]!, total: Int!}
+
+# ===== Queries & Mutations =====
 type Query {
   me: User!
+  
+  # Student view (no isCorrect)
+  examList(limit: Int, offset: Int, search: String, sort: String ): ExamList!
+  exam(examId: ID!): Exam!
+
+  # Admin view (returns questions with isCorrect)
+  examAdmin(examId: ID!): [QuestionAdmin!]!
 }
 
 type Mutation {
+  # Auth
   register(email: String!, name: String!, password: String!): AuthPayload!
   login(email: String!, password: String!): AuthPayload!
+
+  # Admin
+  createExam(input: CreateExamInput!): Exam!
+  createQuestion(input: CreateQuestionInput!): QuestionAdmin!
+  addOptions(input: AddOptionsInput!): [OptionAdmin!]!
+  setCorrectOptions(input: SetCorrectOptionsInput!): QuestionAdmin!
+
+  # Student
+  startAttempt(input: StartAttemptInput!): Attempt!
+  answerMCQ(input: AnswerMCQInput!): Boolean!
+  answerText(input: AnswerTextInput!): Boolean!
+  answerNumeric(input: AnswerNumericInput!): Boolean!
+  submitAttempt(input: SubmitAttemptInput!): AttemptResult!
 }

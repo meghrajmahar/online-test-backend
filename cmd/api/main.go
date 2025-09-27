@@ -18,7 +18,12 @@ import (
 )
 
 func autoMigrate(d *gorm.DB) {
-	if err := d.AutoMigrate(&models.User{}); err != nil {
+	if err := d.AutoMigrate(
+		&models.User{},
+		&models.Exam{},
+		&models.Question{},
+		&models.Option{},
+	); err != nil {
 		log.Fatalf("Automigrate : ", err)
 	}
 }
@@ -35,11 +40,13 @@ func main() {
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	}))
+
 	r.Use(auth.Middleware)
 
 	resolver := &resolvers.Resolver{
 		DB:          d,
-		AuthService: services.NewAuthService(d), // <- yeh missing tha
+		AuthService: services.NewAuthService(d),
+		ExamService: services.NewExamService(d),
 	}
 
 	es := generated.NewExecutableSchema(generated.Config{Resolvers: resolver})
